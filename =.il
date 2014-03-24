@@ -21,7 +21,7 @@
 	ldlen
 	conv.i4
 	brtrue.s	args_not_empty
-
+	
 	ldstr		"Usage: = 2*2"
 	ldstr		"Input is empty"
 	call		valuetype [System.Windows.Forms]System.Windows.Forms.DialogResult [System.Windows.Forms]System.Windows.Forms.MessageBox::Show(string,
@@ -524,6 +524,72 @@ return_res:
 }
 
 
+.method private static int32 find_matching_bracket(string where) cil managed
+{
+	.maxstack  2
+	.locals init (	[0] int32 string_len,
+           		[1] int32 bracket_counter,
+           		[2] int32 i	)
+
+	ldarg.0	//	where
+	callvirt	instance int32 [mscorlib]System.String::get_Length()
+	stloc.0	//	string_len
+	ldc.i4.0
+	stloc.1	//	bracket_counter
+	ldc.i4.0
+	stloc.2	//	i
+	br.s		loop_index_check
+
+loop_starts:
+	ldarg.0	//	where
+	ldloc.2	//	i
+	callvirt	instance char [mscorlib]System.String::get_Chars(int32)
+	ldc.i4.s	40	// '('
+	bne.un.s	opening_bracket_not_found
+
+opening_bracket_found:
+	ldloc.1	//	bracket_counter
+	ldc.i4.1
+	add
+	stloc.1	//	bracket_counter
+  
+opening_bracket_not_found:
+	ldarg.0	//	where
+	ldloc.2	//	i
+	callvirt	instance char [mscorlib]System.String::get_Chars(int32)
+	ldc.i4.s	41	// ')'
+	bne.un.s	loop_index_increment
+
+closing_bracket_found:
+	ldloc.1	//	bracket_counter
+	ldc.i4.1
+	bne.un.s	closing_bracket_found_and_counter_not_1
+	
+closing_bracket_found_and_counter_1:
+	ldloc.2	//	i
+	ret
+
+closing_bracket_found_and_counter_not_1:
+	ldloc.1	//	bracket_counter
+	ldc.i4.1
+	sub
+	stloc.1	//	bracket_counter
+
+loop_index_increment:
+	ldloc.2	//	i
+	ldc.i4.1
+	add
+	stloc.2	//	i
+
+loop_index_check:
+	ldloc.2	//	i
+	ldloc.0	//	string_len
+	blt.s      loop_starts
+	ldc.i4.m1
+	ret
+}
+
+
 .method private static string calc(string formula) cil managed
 {
 	.maxstack  4
@@ -549,8 +615,8 @@ no_opening_bracket:
 
 there_is_an_opening_bracket:
 	ldarg.0	//	formula
-	ldc.i4.s   41	// ')'
-	callvirt   instance int32 [mscorlib]System.String::LastIndexOf(char)
+	call		int32 find_matching_bracket(string)
+
 	stloc.1	//	right_index
 	ldloc.1	//	right_index
 	ldc.i4.m1
