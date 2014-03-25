@@ -10,44 +10,53 @@
 .module eqcalc.exe
 .subsystem 0x0002  // no console window
 
+
+.typedef [System.Windows.Forms]System.Windows.Forms.MessageBox as MessageBox
+.typedef [System.Windows.Forms]System.Windows.Forms.DialogResult as DialogResult
+.typedef [System.Windows.Forms]System.Windows.Forms.MessageBoxButtons as MessageBoxButtons
+.typedef [System.Windows.Forms]System.Windows.Forms.Clipboard as Clipboard
+.typedef [mscorlib]System.Collections.Generic.List`1 as List`1
+.typedef [mscorlib]System.Collections.Generic.IEnumerable`1 as IEnumerable`1
+.typedef [mscorlib]System.Collections.Generic.IEnumerator`1 as IEnumerator`1
+.typedef [System.Core]System.Linq.Enumerable as Enumerable
+.typedef [mscorlib]System.String as String
+
+
 .method static void Main(string[] args) cil managed
 {
 	.entrypoint
 	.maxstack  3
 	.locals init (	[0] string res)
-	.custom instance void [mscorlib]System.STAThreadAttribute::.ctor() = ( 01 00 00 00 ) 
+	.custom instance void [mscorlib]System.STAThreadAttribute::.ctor() = ( 01 00 00 00 )
 
 	ldarg		args
 	ldlen
 	conv.i4
 	brtrue.s	args_not_empty
-	
+
 	ldstr		"Usage: = 2*2"
 	ldstr		"Input is empty"
-	call		valuetype [System.Windows.Forms]System.Windows.Forms.DialogResult [System.Windows.Forms]System.Windows.Forms.MessageBox::Show(string,
-				string)
+	call		valuetype DialogResult MessageBox::Show(string,	string)
 	pop
 	br.s		done_with_main
 
 args_not_empty:
 	ldstr		" "
 	ldarg		args
-	call		string [mscorlib]System.String::Join(string, string[])
+	call		string String::Join(string, string[])
 	call		string calc(string)
 	stloc		res
 	ldloc		res
 	ldstr		"Copy to clipboard\?"
 	ldc.i4.4
-	call		valuetype [System.Windows.Forms]System.Windows.Forms.DialogResult [System.Windows.Forms]System.Windows.Forms.MessageBox::Show(string,
-				string,
-				valuetype [System.Windows.Forms]System.Windows.Forms.MessageBoxButtons)
+	call		valuetype DialogResult MessageBox::Show(string, string,	valuetype MessageBoxButtons)
 	ldc.i4.6
 	ceq
 	brfalse.s	done_with_main
 
 yes_to_copy_to_clipboard:
 	ldloc		res
-	call		void [System.Windows.Forms]System.Windows.Forms.Clipboard::SetText(string)
+	call		void Clipboard::SetText(string)
 
 done_with_main:
 	ret
@@ -66,12 +75,12 @@ done_with_main:
 	.maxstack  4
 	.locals init (	[0] float64 res,
 			[1] int32 chunks_index,
-			[2] class [mscorlib]System.Collections.Generic.IEnumerator`1<float64> enumerator_temp,
+			[2] class IEnumerator`1<float64> enumerator_temp,
 			[3] string[] chunks,
-			[4] class [mscorlib]System.Collections.Generic.List`1<float64> numbers,			
+			[4] class List`1<float64> numbers,
 			[5] char[] delimiter	)
-			
-		
+
+
 split_by_slash:
 	ldarg		formula
 	ldc.i4.1
@@ -82,16 +91,14 @@ split_by_slash:
 	ldc.i4.s   	47 // THE OPERATION SYMBOL '/'
 	stelem.i2
 	ldloc.s		delimiter
-	callvirt	instance string[] [mscorlib]System.String::Split(char[])
+	callvirt	instance string[] String::Split(char[])
 	stloc		chunks
-	
 
-	newobj		instance void class [mscorlib]System.Collections.Generic.List`1<float64>::.ctor()
+	newobj		instance void class List`1<float64>::.ctor()
 	stloc		numbers
 	ldc.i4.0
 	stloc.1	//	chunks_index
 	br.s		check_chunks_index
-	
 
 
 in_loop_for_calculating_numbers:
@@ -101,14 +108,14 @@ in_loop_for_calculating_numbers:
 	ldelem.ref
 
 	call		float64 do_number(string)	// NEXT OPERATION
-	callvirt	instance void class [mscorlib]System.Collections.Generic.List`1<float64>::Add(!0)
+	callvirt	instance void class List`1<float64>::Add(!0)
 
 	ldloc.1	//	chunks_index
 	ldc.i4.1
 	add
 	stloc.1	//	chunks_index
 
-check_chunks_index:  
+check_chunks_index:
 	ldloc.1	//	chunks_index
 	ldloc.s		chunks
 	ldlen
@@ -116,19 +123,17 @@ check_chunks_index:
 	clt
 	brtrue.s	in_loop_for_calculating_numbers
 
-	
 
 load_first_of_numbers_for_reduce:
 	ldloc		numbers
 	ldc.i4.0
-	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<float64>::get_Item(int32)
+	callvirt	instance !0 class List`1<float64>::get_Item(int32)
 	stloc.0	//	res
 
 	ldloc		numbers
 	ldc.i4.1
-	call		class [mscorlib]System.Collections.Generic.IEnumerable`1<!!0> [System.Core]System.Linq.Enumerable::Skip<float64>(class [mscorlib]System.Collections.Generic.IEnumerable`1<!!0>,
-				int32)
-	callvirt	instance class [mscorlib]System.Collections.Generic.IEnumerator`1<!0> class [mscorlib]System.Collections.Generic.IEnumerable`1<float64>::GetEnumerator()
+	call		class IEnumerable`1<!!0> Enumerable::Skip<float64>(class IEnumerable`1<!!0>, int32)
+	callvirt	instance class IEnumerator`1<!0> class IEnumerable`1<float64>::GetEnumerator()
 	stloc.2	//	enumerator_temp
 
 	.try
@@ -138,11 +143,11 @@ load_first_of_numbers_for_reduce:
 
 		ldloc.0	//	res
 		ldloc.2	//	enumerator_temp
-		callvirt	instance !0 class [mscorlib]System.Collections.Generic.IEnumerator`1<float64>::get_Current()
+		callvirt	instance !0 class IEnumerator`1<float64>::get_Current()
 		conv.r8
 		div		// THE OPERATION
 		stloc.0	//	res
-		
+
 	check_exit_condition_for_inner_loop:
 		ldloc.2	//	enumerator_temp
 		callvirt	instance bool [mscorlib]System.Collections.IEnumerator::MoveNext()
@@ -165,7 +170,7 @@ load_first_of_numbers_for_reduce:
 	}
 
 return_res:
-	ldloc.0	//	res    
+	ldloc.0	//	res
 	ret
 }
 
@@ -175,12 +180,12 @@ return_res:
 	.maxstack  4
 	.locals init (	[0] float64 res,
 			[1] int32 chunks_index,
-			[2] class [mscorlib]System.Collections.Generic.IEnumerator`1<float64> enumerator_temp,
+			[2] class IEnumerator`1<float64> enumerator_temp,
 			[3] string[] chunks,
-			[4] class [mscorlib]System.Collections.Generic.List`1<float64> numbers,			
+			[4] class List`1<float64> numbers,
 			[5] char[] delimiter	)
-			
-		
+
+
 split_by_slash:
 	ldarg		formula
 	ldc.i4.1
@@ -191,16 +196,15 @@ split_by_slash:
 	ldc.i4.s   	42 // THE OPERATION SYMBOL '*'
 	stelem.i2
 	ldloc.s		delimiter
-	callvirt	instance string[] [mscorlib]System.String::Split(char[])
+	callvirt	instance string[] String::Split(char[])
 	stloc		chunks
-	
 
-	newobj		instance void class [mscorlib]System.Collections.Generic.List`1<float64>::.ctor()
+
+	newobj		instance void class List`1<float64>::.ctor()
 	stloc		numbers
 	ldc.i4.0
 	stloc.1	//	chunks_index
 	br.s		check_chunks_index
-	
 
 
 in_loop_for_calculating_numbers:
@@ -210,14 +214,14 @@ in_loop_for_calculating_numbers:
 	ldelem.ref
 
 	call		float64 do_divs(string)	// NEXT OPERATION
-	callvirt	instance void class [mscorlib]System.Collections.Generic.List`1<float64>::Add(!0)
+	callvirt	instance void class List`1<float64>::Add(!0)
 
 	ldloc.1	//	chunks_index
 	ldc.i4.1
 	add
 	stloc.1	//	chunks_index
 
-check_chunks_index:  
+check_chunks_index:
 	ldloc.1	//	chunks_index
 	ldloc.s		chunks
 	ldlen
@@ -225,19 +229,17 @@ check_chunks_index:
 	clt
 	brtrue.s	in_loop_for_calculating_numbers
 
-	
 
 load_first_of_numbers_for_reduce:
 	ldloc		numbers
 	ldc.i4.0
-	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<float64>::get_Item(int32)
+	callvirt	instance !0 class List`1<float64>::get_Item(int32)
 	stloc.0	//	res
 
 	ldloc		numbers
 	ldc.i4.1
-	call		class [mscorlib]System.Collections.Generic.IEnumerable`1<!!0> [System.Core]System.Linq.Enumerable::Skip<float64>(class [mscorlib]System.Collections.Generic.IEnumerable`1<!!0>,
-				int32)
-	callvirt	instance class [mscorlib]System.Collections.Generic.IEnumerator`1<!0> class [mscorlib]System.Collections.Generic.IEnumerable`1<float64>::GetEnumerator()
+	call		class IEnumerable`1<!!0> Enumerable::Skip<float64>(class IEnumerable`1<!!0>, int32)
+	callvirt	instance class IEnumerator`1<!0> class IEnumerable`1<float64>::GetEnumerator()
 	stloc.2	//	enumerator_temp
 
 	.try
@@ -247,11 +249,11 @@ load_first_of_numbers_for_reduce:
 
 		ldloc.0	//	res
 		ldloc.2	//	enumerator_temp
-		callvirt	instance !0 class [mscorlib]System.Collections.Generic.IEnumerator`1<float64>::get_Current()
+		callvirt	instance !0 class IEnumerator`1<float64>::get_Current()
 		conv.r8
 		mul		// THE OPERATION
 		stloc.0	//	res
-		
+
 	check_exit_condition_for_inner_loop:
 		ldloc.2	//	enumerator_temp
 		callvirt	instance bool [mscorlib]System.Collections.IEnumerator::MoveNext()
@@ -274,7 +276,7 @@ load_first_of_numbers_for_reduce:
 	}
 
 return_res:
-	ldloc.0	//	res    
+	ldloc.0	//	res
 	ret
 }
 
@@ -284,12 +286,12 @@ return_res:
 	.maxstack  4
 	.locals init (	[0] float64 res,
 			[1] int32 chunks_index,
-			[2] class [mscorlib]System.Collections.Generic.IEnumerator`1<float64> enumerator_temp,
+			[2] class IEnumerator`1<float64> enumerator_temp,
 			[3] string[] chunks,
-			[4] class [mscorlib]System.Collections.Generic.List`1<float64> numbers,			
+			[4] class List`1<float64> numbers,
 			[5] char[] delimiter	)
-			
-		
+
+
 split_by_slash:
 	ldarg		formula
 	ldc.i4.1
@@ -300,16 +302,15 @@ split_by_slash:
 	ldc.i4.s   	45 // THE OPERATION SYMBOL '-'
 	stelem.i2
 	ldloc.s		delimiter
-	callvirt	instance string[] [mscorlib]System.String::Split(char[])
+	callvirt	instance string[] String::Split(char[])
 	stloc		chunks
-	
 
-	newobj		instance void class [mscorlib]System.Collections.Generic.List`1<float64>::.ctor()
+
+	newobj		instance void class List`1<float64>::.ctor()
 	stloc		numbers
 	ldc.i4.0
 	stloc.1	//	chunks_index
 	br.s		check_chunks_index
-	
 
 
 in_loop_for_calculating_numbers:
@@ -317,21 +318,21 @@ in_loop_for_calculating_numbers:
 	ldloc.s		chunks
 	ldloc.1	//	chunks_index
 	ldelem.ref
-	
-	callvirt	instance string [mscorlib]System.String::Trim()	
-	dup	
+
+	callvirt	instance string String::Trim()
+	dup
 	ldstr		""
-	call		bool [mscorlib]System.String::op_Equality(string,
+	call		bool String::op_Equality(string,
 				string)
 	brtrue.s	chunk_is_empty_string
-chunk_is_not_empty_string:	
+chunk_is_not_empty_string:
 	call		float64 do_muls(string)	// NEXT OPERATION
-	callvirt	instance void class [mscorlib]System.Collections.Generic.List`1<float64>::Add(!0)
+	callvirt	instance void class List`1<float64>::Add(!0)
 	br.s		regardless_of_chunk_len
 chunk_is_empty_string:
 	pop
 	ldc.r8		0
-	callvirt	instance void class [mscorlib]System.Collections.Generic.List`1<float64>::Add(!0)
+	callvirt	instance void class List`1<float64>::Add(!0)
 regardless_of_chunk_len:
 
 	ldloc.1	//	chunks_index
@@ -339,7 +340,7 @@ regardless_of_chunk_len:
 	add
 	stloc.1	//	chunks_index
 
-check_chunks_index:  
+check_chunks_index:
 	ldloc.1	//	chunks_index
 	ldloc.s		chunks
 	ldlen
@@ -347,19 +348,17 @@ check_chunks_index:
 	clt
 	brtrue.s	in_loop_for_calculating_numbers
 
-	
-	
+
 load_first_of_numbers_for_reduce:
 	ldloc		numbers
 	ldc.i4.0
-	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<float64>::get_Item(int32)
+	callvirt	instance !0 class List`1<float64>::get_Item(int32)
 	stloc.0	//	res
 
 	ldloc		numbers
 	ldc.i4.1
-	call		class [mscorlib]System.Collections.Generic.IEnumerable`1<!!0> [System.Core]System.Linq.Enumerable::Skip<float64>(class [mscorlib]System.Collections.Generic.IEnumerable`1<!!0>,
-				int32)
-	callvirt	instance class [mscorlib]System.Collections.Generic.IEnumerator`1<!0> class [mscorlib]System.Collections.Generic.IEnumerable`1<float64>::GetEnumerator()
+	call		class IEnumerable`1<!!0> Enumerable::Skip<float64>(class IEnumerable`1<!!0>, int32)
+	callvirt	instance class IEnumerator`1<!0> class IEnumerable`1<float64>::GetEnumerator()
 	stloc.2	//	enumerator_temp
 
 	.try
@@ -369,11 +368,11 @@ load_first_of_numbers_for_reduce:
 
 		ldloc.0	//	res
 		ldloc.2	//	enumerator_temp
-		callvirt	instance !0 class [mscorlib]System.Collections.Generic.IEnumerator`1<float64>::get_Current()
+		callvirt	instance !0 class IEnumerator`1<float64>::get_Current()
 		conv.r8
 		sub		// THE OPERATION
 		stloc.0	//	res
-		
+
 	check_exit_condition_for_inner_loop:
 		ldloc.2	//	enumerator_temp
 		callvirt	instance bool [mscorlib]System.Collections.IEnumerator::MoveNext()
@@ -388,7 +387,7 @@ load_first_of_numbers_for_reduce:
 		ldnull
 		ceq
 		brtrue.s	end_finally
- 
+
 		ldloc.2	//	enumerator_temp
 		callvirt	instance void [mscorlib]System.IDisposable::Dispose()
 	end_finally:
@@ -396,7 +395,7 @@ load_first_of_numbers_for_reduce:
 	}
 
 return_res:
-	ldloc.0	//	res    
+	ldloc.0	//	res
 	ret
 }
 
@@ -405,12 +404,12 @@ return_res:
 	.maxstack  4
 	.locals init (	[0] float64 res,
 			[1] int32 chunks_index,
-			[2] class [mscorlib]System.Collections.Generic.IEnumerator`1<float64> enumerator_temp,
+			[2] class IEnumerator`1<float64> enumerator_temp,
 			[3] string[] chunks,
-			[4] class [mscorlib]System.Collections.Generic.List`1<float64> numbers,			
+			[4] class List`1<float64> numbers,
 			[5] char[] delimiter	)
-			
-		
+
+
 split_by_slash:
 	ldarg		formula
 	ldc.i4.1
@@ -421,16 +420,16 @@ split_by_slash:
 	ldc.i4.s   	43 // THE OPERATION SYMBOL '+'
 	stelem.i2
 	ldloc.s		delimiter
-	callvirt	instance string[] [mscorlib]System.String::Split(char[])
+	callvirt	instance string[] String::Split(char[])
 	stloc		chunks
-	
 
-	newobj		instance void class [mscorlib]System.Collections.Generic.List`1<float64>::.ctor()
+
+	newobj		instance void class List`1<float64>::.ctor()
 	stloc		numbers
 	ldc.i4.0
 	stloc.1	//	chunks_index
 	br.s		check_chunks_index
-	
+
 
 
 in_loop_for_calculating_numbers:
@@ -440,14 +439,14 @@ in_loop_for_calculating_numbers:
 	ldelem.ref
 
 	call		float64 do_minuses(string)	// NEXT OPERATION
-	callvirt	instance void class [mscorlib]System.Collections.Generic.List`1<float64>::Add(!0)
+	callvirt	instance void class List`1<float64>::Add(!0)
 
 	ldloc.1	//	chunks_index
 	ldc.i4.1
 	add
 	stloc.1	//	chunks_index
 
-check_chunks_index:  
+check_chunks_index:
 	ldloc.1	//	chunks_index
 	ldloc.s		chunks
 	ldlen
@@ -455,19 +454,18 @@ check_chunks_index:
 	clt
 	brtrue.s	in_loop_for_calculating_numbers
 
-	
+
 
 load_first_of_numbers_for_reduce:
 	ldloc		numbers
 	ldc.i4.0
-	callvirt	instance !0 class [mscorlib]System.Collections.Generic.List`1<float64>::get_Item(int32)
+	callvirt	instance !0 class List`1<float64>::get_Item(int32)
 	stloc.0	//	res
 
 	ldloc		numbers
 	ldc.i4.1
-	call		class [mscorlib]System.Collections.Generic.IEnumerable`1<!!0> [System.Core]System.Linq.Enumerable::Skip<float64>(class [mscorlib]System.Collections.Generic.IEnumerable`1<!!0>,
-				int32)
-	callvirt	instance class [mscorlib]System.Collections.Generic.IEnumerator`1<!0> class [mscorlib]System.Collections.Generic.IEnumerable`1<float64>::GetEnumerator()
+	call		class IEnumerable`1<!!0> Enumerable::Skip<float64>(class IEnumerable`1<!!0>, int32)
+	callvirt	instance class IEnumerator`1<!0> class IEnumerable`1<float64>::GetEnumerator()
 	stloc.2	//	enumerator_temp
 
 	.try
@@ -477,11 +475,11 @@ load_first_of_numbers_for_reduce:
 
 		ldloc.0	//	res
 		ldloc.2	//	enumerator_temp
-		callvirt	instance !0 class [mscorlib]System.Collections.Generic.IEnumerator`1<float64>::get_Current()
+		callvirt	instance !0 class IEnumerator`1<float64>::get_Current()
 		conv.r8
 		add		// THE OPERATION
 		stloc.0	//	res
-		
+
 	check_exit_condition_for_inner_loop:
 		ldloc.2	//	enumerator_temp
 		callvirt	instance bool [mscorlib]System.Collections.IEnumerator::MoveNext()
@@ -496,7 +494,7 @@ load_first_of_numbers_for_reduce:
 		ldnull
 		ceq
 		brtrue.s	end_finally
- 
+
 		ldloc.2	//	enumerator_temp
 		callvirt	instance void [mscorlib]System.IDisposable::Dispose()
 	end_finally:
@@ -504,7 +502,7 @@ load_first_of_numbers_for_reduce:
 	}
 
 return_res:
-	ldloc.0	//	res    
+	ldloc.0	//	res
 	ret
 }
 
@@ -532,7 +530,7 @@ return_res:
            		[2] int32 i	)
 
 	ldarg.0	//	where
-	callvirt	instance int32 [mscorlib]System.String::get_Length()
+	callvirt	instance int32 String::get_Length()
 	stloc.0	//	string_len
 	ldc.i4.0
 	stloc.1	//	bracket_counter
@@ -543,7 +541,7 @@ return_res:
 loop_starts:
 	ldarg.0	//	where
 	ldloc.2	//	i
-	callvirt	instance char [mscorlib]System.String::get_Chars(int32)
+	callvirt	instance char String::get_Chars(int32)
 	ldc.i4.s	40	// '('
 	bne.un.s	opening_bracket_not_found
 
@@ -552,11 +550,11 @@ opening_bracket_found:
 	ldc.i4.1
 	add
 	stloc.1	//	bracket_counter
-  
+
 opening_bracket_not_found:
 	ldarg.0	//	where
 	ldloc.2	//	i
-	callvirt	instance char [mscorlib]System.String::get_Chars(int32)
+	callvirt	instance char String::get_Chars(int32)
 	ldc.i4.s	41	// ')'
 	bne.un.s	loop_index_increment
 
@@ -564,7 +562,7 @@ closing_bracket_found:
 	ldloc.1	//	bracket_counter
 	ldc.i4.1
 	bne.un.s	closing_bracket_found_and_counter_not_1
-	
+
 closing_bracket_found_and_counter_1:
 	ldloc.2	//	i
 	ret
@@ -601,13 +599,13 @@ loop_index_check:
 
 	ldarg.0	//	formula
 	ldc.i4.s	40	// '('
-	callvirt	instance int32 [mscorlib]System.String::IndexOf(char)
+	callvirt	instance int32 String::IndexOf(char)
 	stloc.0	//	left_index
 	ldloc.0	//	left_index
 	ldc.i4.m1
 	ceq
 	brfalse.s   there_is_an_opening_bracket
-    
+
 no_opening_bracket:
 	ldarg.0	//	formula
 	call		string calc_no_brackets(string)
@@ -623,26 +621,23 @@ there_is_an_opening_bracket:
 	ceq
 	ldc.i4.0
 	ceq
-	brtrue.s   there_is_a_closing_bracket
-    
+	brtrue.s	there_is_a_closing_bracket
+
 no_closing_bracket:
-	ldstr      "Can't resolve '"
+	ldstr		"Can't resolve '"
 	ldarg.0
-	ldstr      "'"
-	call       string [mscorlib]System.String::Concat(string,
-			string,
-			string)
-	br.s       done_with_calc
+	ldstr		"'"
+	call		string String::Concat(string, string, string)
+	br.s		done_with_calc
 
 there_is_a_closing_bracket:
 	ldarg.0	//	formula
 	ldc.i4.0
 	ldloc.0	//	left_index
-	callvirt	instance string [mscorlib]System.String::Substring(int32,
-				int32)
+	callvirt	instance string String::Substring(int32, int32)
 	stloc.2	//	left
 	ldarg.0	//	formula
-	ldloc.0	//	left_index	
+	ldloc.0	//	left_index
 	ldc.i4.1
 	add
 	ldloc.1	//	right_index
@@ -650,14 +645,13 @@ there_is_a_closing_bracket:
 	sub
 	ldc.i4.1
 	sub
-	callvirt   	instance string [mscorlib]System.String::Substring(int32,
-				int32)
+	callvirt   	instance string String::Substring(int32, int32)
 	stloc.3	//	middle
 	ldarg.0	//	formula
 	ldloc.1	//	right_index
 	ldc.i4.1
 	add
-	callvirt	instance string [mscorlib]System.String::Substring(int32)
+	callvirt	instance string String::Substring(int32)
 	stloc.s		right
 
 	ldloc.2	//	left
@@ -665,10 +659,8 @@ there_is_a_closing_bracket:
 	call		string calc(string)
 	ldloc.s		right
 
-	call		string [mscorlib]System.String::Concat(string,
-				string,
-				string)
-				
+	call		string String::Concat(string, string, string)
+
 	call		string calc(string)
 done_with_calc:
 	ret
