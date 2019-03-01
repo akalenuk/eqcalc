@@ -14,4 +14,4 @@ Usage:
     = ((100+46) * 0.69 - 50) * 2
     
 Here's built `exe`: 
-https://dl.dropboxusercontent.com/u/25247809/exe/%3D.exe
+https://github.com/akalenuk/eqcalc/releases/tag/1.0
